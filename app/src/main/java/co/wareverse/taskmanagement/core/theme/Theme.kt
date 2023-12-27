@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.ui.theme
+package co.wareverse.taskmanagement.core.theme
 
 import android.app.Activity
 import android.os.Build

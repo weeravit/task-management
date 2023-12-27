@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.data
+package co.wareverse.taskmanagement.data.model
 
 
 import kotlinx.serialization.SerialName

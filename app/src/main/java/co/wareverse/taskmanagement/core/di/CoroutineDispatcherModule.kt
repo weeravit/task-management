@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.core
+package co.wareverse.taskmanagement.core.di
 
 import dagger.Module
 import dagger.Provides
