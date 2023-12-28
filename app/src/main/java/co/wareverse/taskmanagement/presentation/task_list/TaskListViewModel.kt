@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.presentation
+package co.wareverse.taskmanagement.presentation.task_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +7,7 @@ import androidx.paging.cachedIn
 import co.wareverse.taskmanagement.data.model.TaskStatus
 import co.wareverse.taskmanagement.data.model.TodoListModel
 import co.wareverse.taskmanagement.data.repository.TaskRepository
+import co.wareverse.taskmanagement.presentation.task_list.TaskListUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

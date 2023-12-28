@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.presentation
+package co.wareverse.taskmanagement.presentation.task_list
 
 import androidx.compose.runtime.Stable
 import co.wareverse.taskmanagement.data.model.TaskStatus

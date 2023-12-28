@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.presentation
+package co.wareverse.taskmanagement.presentation.task_list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
