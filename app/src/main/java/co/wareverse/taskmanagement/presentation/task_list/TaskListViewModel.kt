@@ -7,7 +7,6 @@ import androidx.paging.cachedIn
 import co.wareverse.taskmanagement.data.model.TaskStatus
 import co.wareverse.taskmanagement.data.model.TodoListModel
 import co.wareverse.taskmanagement.data.repository.TaskRepository
-import co.wareverse.taskmanagement.presentation.task_list.TaskListUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,18 +24,24 @@ class TaskListViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private val _paging = MutableStateFlow<PagingData<TodoListModel>>(PagingData.empty())
-    val paging = _paging.cachedIn(viewModelScope)
+    val paging = _paging.asStateFlow()
 
     fun load(status: TaskStatus = TaskStatus.TODO) {
-        viewModelScope.launch {
-            _uiState.update { state ->
-                state.copy(filter = status)
-            }
+        _uiState.update { state ->
+            state.copy(filter = status)
+        }
 
-            taskRepository.getTaskList(status)
-                .onEach { pagingData ->
-                    _paging.update { pagingData }
-                }.launchIn(this)
+        taskRepository.getTaskList(status)
+            .cachedIn(viewModelScope)
+            .onEach { pagingData ->
+                _paging.update { pagingData }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun deleteTask(task: TodoListModel.TaskModel) {
+        viewModelScope.launch {
+            taskRepository.deleteTask(task)
         }
     }
 }

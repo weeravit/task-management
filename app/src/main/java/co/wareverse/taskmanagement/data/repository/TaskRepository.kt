@@ -1,24 +1,29 @@
 package co.wareverse.taskmanagement.data.repository
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.insertSeparators
 import androidx.paging.map
-import co.wareverse.taskmanagement.core.extension.d_MMMM_yyyy
-import co.wareverse.taskmanagement.core.extension.API_PATTERN
-import co.wareverse.taskmanagement.core.extension.toLocalDateTime
-import co.wareverse.taskmanagement.core.extension.toPattern
+import co.wareverse.taskmanagement.core.di.IODispatcher
 import co.wareverse.taskmanagement.data.api.APIService
+import co.wareverse.taskmanagement.data.local.AppDatabase
+import co.wareverse.taskmanagement.data.mapper.toModel
 import co.wareverse.taskmanagement.data.model.TaskStatus
 import co.wareverse.taskmanagement.data.model.TodoListModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class TaskRepository @Inject constructor(
     private val apiService: APIService,
+    private val appDatabase: AppDatabase,
+    @IODispatcher private val dispatcher: CoroutineDispatcher,
 ) {
+    @OptIn(ExperimentalPagingApi::class)
     fun getTaskList(
         status: TaskStatus,
         limit: Int = 20,
@@ -28,27 +33,16 @@ class TaskRepository @Inject constructor(
                 pageSize = limit,
                 initialLoadSize = limit,
             ),
-            pagingSourceFactory = {
-                TodoListPagingSource(
-                    apiService = apiService,
-                    taskStatus = status,
-                )
-            }
+            remoteMediator = TaskRemoteMediator(
+                taskStatus = status,
+                apiService = apiService,
+                appDatabase = appDatabase,
+            ),
+            pagingSourceFactory = { appDatabase.taskDao().pagingSource(status.value) }
         ).flow.map { pagingData ->
-            pagingData.map { dto ->
-                TodoListModel.TaskModel(
-                    id = dto.id.orEmpty(),
-                    title = dto.title.orEmpty(),
-                    description = dto.description.orEmpty(),
-                    status = dto.status.orEmpty(),
-                    createdAt = dto.createdAt.orEmpty(),
-                    imageUrl = "https://picsum.photos/100?random=${(0..50).random()}",
-                    date = dto.createdAt.orEmpty()
-                        .toLocalDateTime(API_PATTERN)
-                        .toPattern(d_MMMM_yyyy)
-                        .uppercase(),
-                )
-            }.insertSeparators { before: TodoListModel.TaskModel?, after: TodoListModel.TaskModel? ->
+            pagingData.map { it.toModel() }
+                .insertSeparators { before: TodoListModel.TaskModel?,
+                                    after: TodoListModel.TaskModel? ->
                     if (after != null && (before == null || before.date != after.date)) {
                         TodoListModel.DateGroupTasksModel(
                             date = after.date
@@ -58,5 +52,9 @@ class TaskRepository @Inject constructor(
                     }
                 }
         }
+    }
+
+    suspend fun deleteTask(task: TodoListModel.TaskModel) = withContext(dispatcher) {
+        appDatabase.taskDao().delete(task.id)
     }
 }

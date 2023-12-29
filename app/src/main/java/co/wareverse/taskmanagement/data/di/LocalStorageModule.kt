@@ -2,8 +2,10 @@ package co.wareverse.taskmanagement.data.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import co.wareverse.taskmanagement.data.local.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,15 +16,15 @@ import javax.inject.Singleton
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class TaskManagementPrefs
+annotation class AppPrefs
 
 @Module
 @InstallIn(SingletonComponent::class)
 object LocalStorageModule {
-    @TaskManagementPrefs
+    @AppPrefs
     @Singleton
     @Provides
-    fun provideTaskManagementPrefs(
+    fun provideAppPrefs(
         @ApplicationContext context: Context,
     ): SharedPreferences {
         val masterKey = MasterKey.Builder(context)
@@ -31,10 +33,22 @@ object LocalStorageModule {
 
         return EncryptedSharedPreferences.create(
             context,
-            "task_management_prefs",
+            "app_prefs",
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppDatabase(
+        @ApplicationContext context: Context,
+    ): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "task_db"
+        ).build()
     }
 }
