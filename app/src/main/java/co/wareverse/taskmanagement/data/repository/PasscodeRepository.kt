@@ -14,6 +14,24 @@ class PasscodeRepository @Inject constructor(
     private val appConfig: AppConfig,
     @AppPrefs private val appPrefs: SharedPreferences,
 ) {
+    fun isSetup(): Boolean {
+        return appPrefs.getString(
+            PASSCODE,
+            null,
+        ).orEmpty().isNotEmpty()
+    }
+
+    fun setup(passcode: String, confirmPasscode: String) {
+        takeUnless { passcode != confirmPasscode } ?: throw Exception()
+
+        appPrefs.edit {
+            putString(
+                PASSCODE,
+                passcode,
+            )
+        }
+    }
+
     fun isPasscodeValid(passcode: String): Boolean {
         return appPrefs.getString(
             PASSCODE,

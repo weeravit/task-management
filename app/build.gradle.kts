@@ -71,6 +71,7 @@ dependencies {
     implementation("androidx.paging:paging-compose:3.3.0-alpha02")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha06")
+    implementation("androidx.compose.material:material-icons-extended-android:1.5.4")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("com.google.dagger:hilt-android:2.48")

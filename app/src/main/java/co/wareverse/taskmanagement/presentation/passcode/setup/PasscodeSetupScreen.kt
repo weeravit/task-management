@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.presentation.passcode.lock
+package co.wareverse.taskmanagement.presentation.passcode.setup
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,26 +15,19 @@ import co.wareverse.taskmanagement.presentation.passcode.component.PasscodeConte
 import co.wareverse.taskmanagement.presentation.passcode.component.rememberPasscodeState
 
 @Composable
-fun PasscodeLockScreen(
-    viewModel: PasscodeLockViewModel = hiltViewModel(),
-    onSetupClick: () -> Unit,
-    onPassed: () -> Unit,
+fun PasscodeSetupScreen(
+    viewModel: PasscodeSetupViewModel = hiltViewModel(),
+    onPassed: (String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val passcodeState = rememberPasscodeState(
-        onSetupClick = onSetupClick,
-    )
+    val passcodeState = rememberPasscodeState()
 
     LaunchedEffect(uiState.eventState) {
         uiState.eventState
-            .takeIf { it is PasscodeLockEventState.Passed }
-            ?.let { onPassed() }
-
-        uiState.eventState
-            .takeIf { it is PasscodeLockEventState.Incorrect }
+            .takeIf { it is PasscodeSetupEventState.Setup }
+            ?.let { it as PasscodeSetupEventState.Setup }
             ?.let {
-                passcodeState.passcode = ""
-                passcodeState.errorMessage = "Incorrect Passcode. Please try again."
+                onPassed(it.passcode)
                 viewModel.clearEventState()
             }
     }
@@ -46,7 +39,7 @@ fun PasscodeLockScreen(
 
         passcodeState.passcode
             .takeIf { it.length == 6 }
-            ?.let { viewModel.submit(it) }
+            ?.let { viewModel.setupNewPassword(it) }
     }
 
     Scaffold(
@@ -59,7 +52,7 @@ fun PasscodeLockScreen(
                 .padding(it)
                 .fillMaxSize(),
             state = passcodeState,
-            title = "ENTER PASSCODE",
+            title = "SETUP A NEW PASSCODE",
             subtitle = "Please enter your passcode",
         )
     }
