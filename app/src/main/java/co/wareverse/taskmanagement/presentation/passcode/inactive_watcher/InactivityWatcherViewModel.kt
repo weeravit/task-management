@@ -35,6 +35,10 @@ class InactivityWatcherViewModel @Inject constructor(
     }
 
     fun extendInactiveTime() {
-        passcodeRepository.extendInactiveTime()
+        _uiState.update { state ->
+            state.copy(
+                inactiveMillis = passcodeRepository.extendInactiveTime()
+            )
+        }
     }
 }

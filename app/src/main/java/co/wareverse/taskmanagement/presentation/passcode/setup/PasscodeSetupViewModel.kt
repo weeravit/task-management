@@ -1,6 +1,7 @@
 package co.wareverse.taskmanagement.presentation.passcode.setup
 
 import androidx.lifecycle.ViewModel
+import co.wareverse.taskmanagement.data.exception.PasscodeMismatchException
 import co.wareverse.taskmanagement.data.repository.PasscodeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,19 +15,6 @@ class PasscodeSetupViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(PasscodeSetupUiState())
     val uiState = _uiState.asStateFlow()
-
-    fun neverSetupWatcher() {
-        _uiState.update { state ->
-            val eventState = when {
-                passcodeRepository.isSetup() -> PasscodeSetupEventState.Idle
-                else -> PasscodeSetupEventState.NeverSetup
-            }
-
-            state.copy(
-                eventState = eventState,
-            )
-        }
-    }
 
     fun setupNewPassword(passcode: String) {
         _uiState.update { state ->
@@ -51,7 +39,7 @@ class PasscodeSetupViewModel @Inject constructor(
                 state.copy(
                     eventState = PasscodeSetupEventState.Passed,
                 )
-            } catch (e: Exception) {
+            } catch (e: PasscodeMismatchException) {
                 state.copy(
                     eventState = PasscodeSetupEventState.Mismatch,
                 )

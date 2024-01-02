@@ -1,61 +1,43 @@
 package co.wareverse.taskmanagement.data.repository
 
-import android.content.SharedPreferences
-import androidx.core.content.edit
 import co.wareverse.taskmanagement.core.di.AppConfig
 import co.wareverse.taskmanagement.core.extension.nowInMillis
-import co.wareverse.taskmanagement.data.di.AppPrefs
+import co.wareverse.taskmanagement.data.exception.PasscodeMismatchException
+import co.wareverse.taskmanagement.data.local.AppPreferences
 import javax.inject.Inject
-
-private const val PASSCODE = "PASSCODE"
-private const val EXPIRE_IN_MILLIS = "EXPIRE_IN_MILLIS"
 
 class PasscodeRepository @Inject constructor(
     private val appConfig: AppConfig,
-    @AppPrefs private val appPrefs: SharedPreferences,
+    private val appPreferences: AppPreferences,
 ) {
     fun isSetup(): Boolean {
-        return appPrefs.getString(
-            PASSCODE,
-            null,
-        ).orEmpty().isNotEmpty()
+        return appPreferences.getPasscode().orEmpty().isNotEmpty()
     }
 
     fun setup(passcode: String, confirmPasscode: String) {
-        takeUnless { passcode != confirmPasscode } ?: throw Exception()
+        takeUnless { passcode != confirmPasscode } ?: throw PasscodeMismatchException()
 
-        appPrefs.edit {
-            putString(
-                PASSCODE,
-                passcode,
-            )
-        }
+        appPreferences.setPasscode(passcode)
     }
 
     fun isPasscodeValid(passcode: String): Boolean {
-        return appPrefs.getString(
-            PASSCODE,
-            appConfig.defaultPasscode(),
-        ).let {
-            passcode == it
-        }
+        return appPreferences.getPasscode().orEmpty()
+            .let { it == passcode }
     }
 
     fun isInactive(): Boolean {
-        return appPrefs.getLong(
-            EXPIRE_IN_MILLIS,
-            nowInMillis().plus(appConfig.inactiveTimeLimitInMillis())
-        ).let {
-            nowInMillis() > it
-        }
+        val inactiveTime = appPreferences.getInactiveTime()
+            ?: nowInMillis().plus(appConfig.inactiveTimeLimitInMillis())
+        return nowInMillis() > inactiveTime
     }
 
-    fun extendInactiveTime() {
-        appPrefs.edit {
-            putLong(
-                EXPIRE_IN_MILLIS,
-                nowInMillis().plus(appConfig.inactiveTimeLimitInMillis())
-            )
-        }
+    fun extendInactiveTime(): Long {
+        val newInactiveTime = nowInMillis().plus(appConfig.inactiveTimeLimitInMillis())
+
+        appPreferences.setInactiveTime(
+            newInactiveTime
+        )
+
+        return newInactiveTime
     }
 }

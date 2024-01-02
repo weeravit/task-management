@@ -1,4 +1,4 @@
-package co.wareverse.taskmanagement.presentation.passcode.setup
+package co.wareverse.taskmanagement.presentation.passcode.never_setup_watcher
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,19 +11,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun PasscodeNeverSetupWatcher(
-    viewModel: PasscodeSetupViewModel = hiltViewModel(),
+    viewModel: PasscodeNeverSetupWatcherViewModel = hiltViewModel(),
     onNeverSetup: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.neverSetupWatcher()
+        viewModel.watcher()
     }
 
     LaunchedEffect(uiState.eventState) {
         uiState.eventState
-            .takeIf { it is PasscodeSetupEventState.NeverSetup }
+            .takeIf { it is PasscodeNeverSetupWatcherEventState.NeverSetup }
             ?.let { onNeverSetup() }
     }
 

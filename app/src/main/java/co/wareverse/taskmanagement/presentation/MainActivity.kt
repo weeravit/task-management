@@ -19,7 +19,7 @@ import co.wareverse.taskmanagement.core.extension.popUpTo
 import co.wareverse.taskmanagement.core.theme.TaskManagementTheme
 import co.wareverse.taskmanagement.presentation.passcode.inactive_watcher.InactivityWatcher
 import co.wareverse.taskmanagement.presentation.passcode.lock.PasscodeLockScreen
-import co.wareverse.taskmanagement.presentation.passcode.setup.PasscodeNeverSetupWatcher
+import co.wareverse.taskmanagement.presentation.passcode.never_setup_watcher.PasscodeNeverSetupWatcher
 import co.wareverse.taskmanagement.presentation.passcode.setup.PasscodeSetupConfirmScreen
 import co.wareverse.taskmanagement.presentation.passcode.setup.PasscodeSetupScreen
 import co.wareverse.taskmanagement.presentation.task_list.TaskListScreen

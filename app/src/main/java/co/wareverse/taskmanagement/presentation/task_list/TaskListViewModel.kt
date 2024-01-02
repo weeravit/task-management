@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.map
 import co.wareverse.taskmanagement.data.model.TaskStatus
 import co.wareverse.taskmanagement.data.model.TodoListModel
 import co.wareverse.taskmanagement.data.repository.TaskRepository
@@ -26,13 +27,18 @@ class TaskListViewModel @Inject constructor(
     private val _paging = MutableStateFlow<PagingData<TodoListModel>>(PagingData.empty())
     val paging = _paging.asStateFlow()
 
-    fun load(status: TaskStatus = TaskStatus.TODO) {
+    fun load(
+        status: TaskStatus = TaskStatus.TODO,
+        limit: Int = 20,
+    ) {
         _uiState.update { state ->
             state.copy(filter = status)
         }
 
-        taskRepository.getTaskList(status)
-            .cachedIn(viewModelScope)
+        taskRepository.getTaskPaging(
+            status = status,
+            limit = limit,
+        ).cachedIn(viewModelScope)
             .onEach { pagingData ->
                 _paging.update { pagingData }
             }
@@ -42,6 +48,12 @@ class TaskListViewModel @Inject constructor(
     fun deleteTask(task: TodoListModel.TaskModel) {
         viewModelScope.launch {
             taskRepository.deleteTask(task)
+
+            _uiState.update { state ->
+                state.copy(
+                    eventState = TaskListEventState.TaskDeleted(task)
+                )
+            }
         }
     }
 }

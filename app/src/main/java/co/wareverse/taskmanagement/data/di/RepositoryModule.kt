@@ -1,10 +1,10 @@
 package co.wareverse.taskmanagement.data.di
 
-import android.content.SharedPreferences
 import co.wareverse.taskmanagement.core.di.AppConfig
 import co.wareverse.taskmanagement.core.di.IODispatcher
 import co.wareverse.taskmanagement.data.api.APIService
 import co.wareverse.taskmanagement.data.local.AppDatabase
+import co.wareverse.taskmanagement.data.local.AppPreferences
 import co.wareverse.taskmanagement.data.repository.PasscodeRepository
 import co.wareverse.taskmanagement.data.repository.TaskRepository
 import dagger.Module
@@ -35,11 +35,11 @@ object RepositoryModule {
     @Provides
     fun providePasscodeRepository(
         appConfig: AppConfig,
-        @AppPrefs appPrefs: SharedPreferences,
+        appPreferences: AppPreferences,
     ): PasscodeRepository {
         return PasscodeRepository(
             appConfig = appConfig,
-            appPrefs = appPrefs,
+            appPreferences = appPreferences,
         )
     }
 }
