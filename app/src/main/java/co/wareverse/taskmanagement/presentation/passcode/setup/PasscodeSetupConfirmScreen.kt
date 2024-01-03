@@ -15,8 +15,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.wareverse.taskmanagement.R
 import co.wareverse.taskmanagement.core.theme.BackgroundColor
 import co.wareverse.taskmanagement.core.theme.TextColor
 import co.wareverse.taskmanagement.presentation.passcode.component.PasscodeContent
@@ -30,6 +33,7 @@ fun PasscodeSetupConfirmScreen(
     onBackClick: () -> Unit,
     onPassed: () -> Unit,
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val passcodeState = rememberPasscodeState()
 
@@ -46,7 +50,7 @@ fun PasscodeSetupConfirmScreen(
             ?.let {
                 passcodeState.passcode = ""
                 passcodeState.errorMessage =
-                    "Your confirm passcode does not match. Please try again."
+                    context.getString(R.string.confirm_setup_passcode_screen_mismatch_text)
                 viewModel.clearEventState()
             }
     }
@@ -93,8 +97,8 @@ fun PasscodeSetupConfirmScreen(
                 .padding(it)
                 .fillMaxSize(),
             state = passcodeState,
-            title = "CONFIRM A NEW PASSCODE",
-            subtitle = "Please enter your passcode",
+            title = stringResource(R.string.confirm_setup_passcode_screen_title_text),
+            subtitle = stringResource(R.string.confirm_setup_passcode_screen_subtitle_text),
         )
     }
 }

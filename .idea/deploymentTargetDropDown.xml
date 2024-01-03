@@ -2,6 +2,18 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="ExampleInstrumentedTest">
+        <State />
+      </entry>
+      <entry key="MainE2ETest">
+        <State />
+      </entry>
+      <entry key="PasscodeLockTest">
+        <State />
+      </entry>
+      <entry key="PasscodeSetupTest">
+        <State />
+      </entry>
       <entry key="app">
         <State />
       </entry>

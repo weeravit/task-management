@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -76,7 +77,9 @@ fun RoundTabs(
         ) {
             items.mapIndexed { index, text ->
                 val isSelected = index == selectedItemIndex
+
                 MyTabItem(
+                    modifier = Modifier.testTag(text),
                     textSelectedColor = textSelectedColor,
                     textUnselectedColor = textUnselectedColor,
                     isSelected = isSelected,
@@ -117,6 +120,7 @@ private fun MyTabIndicator(
 
 @Composable
 private fun MyTabItem(
+    modifier: Modifier = Modifier,
     textSelectedColor: Color = White,
     textUnselectedColor: Color = Black,
     isSelected: Boolean,
@@ -133,7 +137,7 @@ private fun MyTabItem(
         animationSpec = tween(easing = LinearEasing), label = "",
     )
     Text(
-        modifier = Modifier
+        modifier = modifier
             .clip(CircleShape)
             .clickable {
                 onClick()

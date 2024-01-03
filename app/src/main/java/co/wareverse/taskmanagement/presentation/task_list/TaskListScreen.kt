@@ -50,10 +50,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import co.wareverse.taskmanagement.core.component.RoundTabs
@@ -72,6 +74,7 @@ import kotlinx.coroutines.delay
 fun TaskListScreen(
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val taskList = viewModel.paging.collectAsLazyPagingItems()
     val lazyListState = rememberLazyListState()
 
@@ -79,6 +82,12 @@ fun TaskListScreen(
         viewModel.load(
             status = TaskStatus.TODO
         )
+    }
+
+    LaunchedEffect(uiState.filter, taskList.itemCount) {
+        taskList.itemCount
+            .takeIf { it > 0 }
+            ?.let { lazyListState.scrollToItem(0) }
     }
 
     Scaffold(
@@ -95,7 +104,9 @@ fun TaskListScreen(
         }
     ) {
         LazyColumn(
-            modifier = Modifier.padding(it),
+            modifier = Modifier
+                .testTag(TaskListScreenTestTags.TASK_LIST)
+                .padding(it),
             contentPadding = PaddingValues(horizontal = 40.dp),
             state = lazyListState,
         ) {
@@ -108,6 +119,7 @@ fun TaskListScreen(
                         is TodoListModel.DateGroupTasksModel -> {
                             TaskDateItem(
                                 modifier = Modifier
+                                    .testTag(TaskListScreenTestTags.TASK_DATE_ITEM)
                                     .padding(top = 20.dp)
                                     .fillMaxWidth()
                                     .animateItemPlacement(tween(1000)),
@@ -118,6 +130,7 @@ fun TaskListScreen(
                         is TodoListModel.TaskModel -> {
                             TaskDetailItem(
                                 modifier = Modifier
+                                    .testTag(TaskListScreenTestTags.TASK_DETAIL_ITEM)
                                     .padding(top = 8.dp)
                                     .background(
                                         color = BackgroundColor,
@@ -210,8 +223,8 @@ private fun TaskDetailItem(
                             color = backgroundColor,
                             shape = RoundedCornerShape(8.dp),
                         )
-                        .padding(end = 16.dp), // inner padding
-                    contentAlignment = Alignment.CenterEnd // place the icon at the end (left)
+                        .padding(end = 16.dp),
+                    contentAlignment = Alignment.CenterEnd
                 ) {
                     Icon(
                         modifier = Modifier.scale(iconScale),
@@ -262,7 +275,7 @@ private fun FilterStatus(
     lazyListState: LazyListState,
     onStatusChanged: (TaskStatus) -> Unit,
 ) {
-    val statusList by remember { mutableStateOf(TaskStatus.values().map { it.display }) }
+    val statusList by remember { mutableStateOf(TaskStatus.entries.map { it.display }) }
     var selected by remember { mutableIntStateOf(0) }
     var previousFirstVisibleItemIndex by remember { mutableIntStateOf(0) }
     val shouldShowFab by remember(lazyListState) {
@@ -295,7 +308,13 @@ private fun FilterStatus(
             selectedItemIndex = selected,
         ) {
             selected = it
-            onStatusChanged(TaskStatus.values()[it])
+            onStatusChanged(TaskStatus.entries[it])
         }
     }
+}
+
+object TaskListScreenTestTags {
+    const val TASK_LIST = "TASK_LIST"
+    const val TASK_DATE_ITEM = "TASK_DATE_ITEM"
+    const val TASK_DETAIL_ITEM = "TASK_DETAIL_ITEM"
 }

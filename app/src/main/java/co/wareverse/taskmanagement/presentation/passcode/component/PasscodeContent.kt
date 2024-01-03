@@ -29,12 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.wareverse.taskmanagement.R
 import co.wareverse.taskmanagement.core.theme.BackgroundColor
 import co.wareverse.taskmanagement.core.theme.KanitFontFamily
 import co.wareverse.taskmanagement.core.theme.PinkColor
@@ -115,7 +117,7 @@ fun PasscodeContent(
                         color = PlaceHolderColor,
                         textAlign = TextAlign.Center,
                         textDecoration = TextDecoration.Underline,
-                        text = "Need to setup a new passcode",
+                        text = stringResource(R.string.reset_new_passcode_text),
                     )
                 }
             }

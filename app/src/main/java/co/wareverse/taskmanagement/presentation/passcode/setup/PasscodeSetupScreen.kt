@@ -8,8 +8,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.wareverse.taskmanagement.R
 import co.wareverse.taskmanagement.core.theme.BackgroundColor
 import co.wareverse.taskmanagement.presentation.passcode.component.PasscodeContent
 import co.wareverse.taskmanagement.presentation.passcode.component.rememberPasscodeState
@@ -52,8 +54,8 @@ fun PasscodeSetupScreen(
                 .padding(it)
                 .fillMaxSize(),
             state = passcodeState,
-            title = "SETUP A NEW PASSCODE",
-            subtitle = "Please enter your passcode",
+            title = stringResource(R.string.passcode_setup_screen_title_text),
+            subtitle = stringResource(R.string.passcode_setup_screen_subtitle_text),
         )
     }
 }
