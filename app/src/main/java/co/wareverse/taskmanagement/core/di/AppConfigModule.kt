@@ -16,6 +16,7 @@ object AppConfigModule {
             override fun baseUrl(): String = "https://todo-list-api-mfchjooefq-as.a.run.app/"
             override fun inactiveTimeLimitInMillis(): Long = 10_000
             override fun defaultPasscode(): String = "123456"
+            override fun defaultItemPerPage(): Int = 10
         }
     }
 }
@@ -24,4 +25,5 @@ interface AppConfig {
     fun baseUrl(): String
     fun inactiveTimeLimitInMillis(): Long
     fun defaultPasscode(): String
+    fun defaultItemPerPage(): Int
 }

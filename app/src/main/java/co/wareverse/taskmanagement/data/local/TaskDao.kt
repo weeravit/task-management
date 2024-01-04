@@ -9,10 +9,10 @@ import co.wareverse.taskmanagement.data.model.TaskEntity
 
 @Dao
 interface TaskDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(items: List<TaskEntity>)
 
-    @Query("SELECT * FROM task WHERE status = :status")
+    @Query("SELECT * FROM task WHERE status = :status ORDER BY createdAt ASC")
     fun pagingSource(status: String): PagingSource<Int, TaskEntity>
 
     @Query("DELETE FROM task WHERE status = :query")

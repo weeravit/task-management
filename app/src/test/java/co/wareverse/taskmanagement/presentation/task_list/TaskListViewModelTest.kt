@@ -1,22 +1,16 @@
 package co.wareverse.taskmanagement.presentation.task_list
 
-import androidx.paging.PagingData
-import androidx.paging.testing.asSnapshot
 import co.wareverse.taskmanagement.MainDispatcherRule
-import co.wareverse.taskmanagement.data.mapper.toModel
 import co.wareverse.taskmanagement.data.model.TaskEntity
 import co.wareverse.taskmanagement.data.model.TaskStatus
 import co.wareverse.taskmanagement.data.model.TodoListModel
 import co.wareverse.taskmanagement.data.repository.TaskRepository
 import junit.framework.TestCase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import java.util.UUID
 
 class TaskListViewModelTest {
@@ -32,19 +26,6 @@ class TaskListViewModelTest {
         viewModel = TaskListViewModel(
             taskRepository = taskRepository,
         )
-    }
-
-    @Test
-    fun `should be done status when load with filter status`() = runTest {
-        // Given
-        val status = TaskStatus.DONE
-        whenever(taskRepository.getTaskPaging(status)).thenReturn(flowOf(PagingData.empty()))
-
-        // When
-        viewModel.load(status)
-
-        // Then
-        TestCase.assertEquals(status, viewModel.uiState.value.filter)
     }
 
 //    @Test

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package co.wareverse.taskmanagement.presentation.task_list
 
 import androidx.compose.animation.AnimatedVisibility
@@ -6,8 +8,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,11 +22,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,9 +43,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,8 +58,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import co.wareverse.taskmanagement.core.component.RoundTabs
 import co.wareverse.taskmanagement.core.theme.BackgroundColor
@@ -68,27 +73,17 @@ import co.wareverse.taskmanagement.data.model.TaskStatus
 import co.wareverse.taskmanagement.data.model.TodoListModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TaskListScreen(
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val taskList = viewModel.paging.collectAsLazyPagingItems()
-    val lazyListState = rememberLazyListState()
-
-    LaunchedEffect(Unit) {
-        viewModel.load(
-            status = TaskStatus.TODO
-        )
-    }
-
-    LaunchedEffect(uiState.filter, taskList.itemCount) {
-        taskList.itemCount
-            .takeIf { it > 0 }
-            ?.let { lazyListState.scrollToItem(0) }
-    }
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(
+        pageCount = { TaskStatus.entries.size }
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -97,57 +92,98 @@ fun TaskListScreen(
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             FilterStatus(
-                lazyListState = lazyListState
+                pagerState = pagerState,
             ) {
-                viewModel.load(status = it)
+                coroutineScope.launch {
+                    TaskStatus.entries.indexOf(it)
+                        .let { pagerState.animateScrollToPage(it) }
+                }
             }
         }
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .testTag(TaskListScreenTestTags.TASK_LIST)
-                .padding(it),
-            contentPadding = PaddingValues(horizontal = 40.dp),
-            state = lazyListState,
+        HorizontalPager(
+            modifier = Modifier.padding(it),
+            state = pagerState,
+            userScrollEnabled = false,
         ) {
-            items(
-                count = taskList.itemCount,
-                key = taskList.itemKey { task -> task.id },
-            ) { index ->
-                taskList[index]?.let { model ->
-                    when (model) {
-                        is TodoListModel.DateGroupTasksModel -> {
-                            TaskDateItem(
-                                modifier = Modifier
-                                    .testTag(TaskListScreenTestTags.TASK_DATE_ITEM)
-                                    .padding(top = 20.dp)
-                                    .fillMaxWidth()
-                                    .animateItemPlacement(tween(1000)),
-                                item = model
-                            )
-                        }
+            when (TaskStatus.entries[pagerState.currentPage]) {
+                TaskStatus.TODO -> TaskList(
+                    modifier = Modifier.testTag(TaskListScreenTestTags.TASK_LIST),
+                    pagingData = viewModel.todoPaging,
+                    onTaskDeleted = viewModel::deleteTask
+                )
 
-                        is TodoListModel.TaskModel -> {
-                            TaskDetailItem(
-                                modifier = Modifier
-                                    .testTag(TaskListScreenTestTags.TASK_DETAIL_ITEM)
-                                    .padding(top = 8.dp)
-                                    .background(
-                                        color = BackgroundColor,
-                                        shape = RoundedCornerShape(8.dp),
-                                    )
-                                    .fillMaxWidth()
-                                    .animateItemPlacement(tween(1000)),
-                                item = model,
-                                onDelete = viewModel::deleteTask,
-                            )
-                        }
+                TaskStatus.DOING -> TaskList(
+                    modifier = Modifier.testTag(TaskListScreenTestTags.TASK_LIST),
+                    pagingData = viewModel.doingPaging,
+                    onTaskDeleted = viewModel::deleteTask
+                )
+
+                TaskStatus.DONE -> TaskList(
+                    modifier = Modifier.testTag(TaskListScreenTestTags.TASK_LIST),
+                    pagingData = viewModel.donePaging,
+                    onTaskDeleted = viewModel::deleteTask
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaskList(
+    modifier: Modifier = Modifier,
+    pagingData: Flow<PagingData<TodoListModel>>,
+    onTaskDeleted: (TodoListModel.TaskModel) -> Unit,
+) {
+    val lazyListState = rememberLazyListState()
+    val taskList = pagingData.collectAsLazyPagingItems()
+
+    LazyColumn(
+        modifier = modifier,
+        state = lazyListState,
+        contentPadding = PaddingValues(horizontal = 40.dp),
+    ) {
+        items(
+            count = taskList.itemCount,
+            key = taskList.itemKey { it.id },
+        ) { index ->
+            taskList[index]?.let { model ->
+                when (model) {
+                    is TodoListModel.DateGroupTasksModel -> {
+                        TaskDateItem(
+                            modifier = Modifier
+                                .testTag(TaskListScreenTestTags.TASK_DATE_ITEM)
+                                .padding(top = 20.dp)
+                                .fillMaxWidth()
+                                .animateItemPlacement(tween(1000)),
+                            item = model
+                        )
+                    }
+
+                    is TodoListModel.TaskModel -> {
+                        TaskDetailItem(
+                            modifier = Modifier
+                                .testTag(TaskListScreenTestTags.TASK_DETAIL_ITEM)
+                                .padding(top = 8.dp)
+                                .background(
+                                    color = BackgroundColor,
+                                    shape = RoundedCornerShape(8.dp),
+                                )
+                                .fillMaxWidth()
+                                .animateItemPlacement(tween(1000)),
+                            item = model,
+                            onDelete = onTaskDeleted,
+                        )
                     }
                 }
             }
-
-            item { Spacer(modifier = Modifier.height(40.dp)) }
         }
+
+        taskList.loadState
+            .takeIf { it.refresh is LoadState.Loading || it.append is LoadState.Loading }
+            ?.let { item { Loading(modifier = Modifier.fillMaxWidth()) } }
+
+        item { Spacer(modifier = Modifier.height(100.dp)) }
     }
 }
 
@@ -182,7 +218,7 @@ private fun TaskDetailItem(
     if (dismissState.isDismissed(direction = DismissDirection.EndToStart)) {
         isShow = false
     }
-    
+
     LaunchedEffect(isShow) {
         if (!isShow) {
             delay(800)
@@ -272,44 +308,41 @@ private fun TaskDetailItem(
 @Composable
 private fun FilterStatus(
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState,
+    pagerState: PagerState,
     onStatusChanged: (TaskStatus) -> Unit,
 ) {
     val statusList by remember { mutableStateOf(TaskStatus.entries.map { it.display }) }
-    var selected by remember { mutableIntStateOf(0) }
-    var previousFirstVisibleItemIndex by remember { mutableIntStateOf(0) }
-    val shouldShowFab by remember(lazyListState) {
-        derivedStateOf {
-            val isShow = lazyListState.firstVisibleItemIndex == 0 ||
-                    lazyListState.firstVisibleItemIndex < previousFirstVisibleItemIndex
-
-            if (previousFirstVisibleItemIndex != lazyListState.firstVisibleItemIndex) {
-                previousFirstVisibleItemIndex = lazyListState.firstVisibleItemIndex
-            }
-
-            isShow
-        }
+    val selected by remember(pagerState.currentPage) {
+        derivedStateOf { pagerState.currentPage }
     }
 
-    AnimatedVisibility(
-        visible = shouldShowFab,
-        enter = scaleIn(),
-        exit = scaleOut(),
+    RoundTabs(
+        modifier = modifier,
+        backgroundColor = Color(0xFFF8F8F8),
+        textSelectedColor = Color.White,
+        textUnselectedColor = Color(0xFFC5C5C5),
+        indicatorColor = Brush.horizontalGradient(
+            colors = listOf(PinkColor, PurpleColor),
+        ),
+        items = statusList,
+        selectedItemIndex = selected,
     ) {
-        RoundTabs(
-            modifier = modifier,
-            backgroundColor = Color(0xFFF8F8F8),
-            textSelectedColor = Color.White,
-            textUnselectedColor = Color(0xFFC5C5C5),
-            indicatorColor = Brush.horizontalGradient(
-                colors = listOf(PinkColor, PurpleColor),
-            ),
-            items = statusList,
-            selectedItemIndex = selected,
-        ) {
-            selected = it
-            onStatusChanged(TaskStatus.entries[it])
-        }
+        onStatusChanged(TaskStatus.entries[it])
+    }
+}
+
+@Composable
+private fun Loading(
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier,
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(16.dp)
+        )
     }
 }
 

@@ -53,7 +53,6 @@ class TaskRemoteMediator(
            appDatabase.withTransaction {
                if (loadType == LoadType.REFRESH) {
                    remoteKeyDao.deleteByQuery(taskStatus.value)
-                   taskDao.deleteByStatus(taskStatus.value)
                }
 
                remoteKeyDao.insertOrReplace(

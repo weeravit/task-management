@@ -1,6 +1,7 @@
 package co.wareverse.taskmanagement.data.repository
 
 import androidx.paging.ExperimentalPagingApi
+import co.wareverse.taskmanagement.core.di.AppConfig
 import co.wareverse.taskmanagement.data.api.APIService
 import co.wareverse.taskmanagement.data.local.AppDatabase
 import co.wareverse.taskmanagement.data.local.TaskDao
@@ -19,15 +20,18 @@ class TaskRepositoryTest {
     private lateinit var taskRepository: TaskRepository
     private lateinit var apiService: APIService
     private lateinit var appDatabase: AppDatabase
+    private lateinit var appConfig: AppConfig
     private val dispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
         apiService = mock()
         appDatabase = mock()
+        appConfig = mock()
         taskRepository = TaskRepository(
             apiService = apiService,
             appDatabase = appDatabase,
+            appConfig = appConfig,
             dispatcher = dispatcher,
         )
     }

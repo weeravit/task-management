@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.insertSeparators
 import androidx.paging.map
+import co.wareverse.taskmanagement.core.di.AppConfig
 import co.wareverse.taskmanagement.core.di.IODispatcher
 import co.wareverse.taskmanagement.data.api.APIService
 import co.wareverse.taskmanagement.data.local.AppDatabase
@@ -22,16 +23,17 @@ import javax.inject.Inject
 class TaskRepository @Inject constructor(
     private val apiService: APIService,
     private val appDatabase: AppDatabase,
+    private val appConfig: AppConfig,
     @IODispatcher private val dispatcher: CoroutineDispatcher,
 ) {
     fun getTaskPaging(
         status: TaskStatus,
-        limit: Int = 20,
     ): Flow<PagingData<TodoListModel>> {
         return Pager(
             config = PagingConfig(
-                pageSize = limit,
-                initialLoadSize = limit,
+                pageSize = appConfig.defaultItemPerPage(),
+                initialLoadSize = appConfig.defaultItemPerPage(),
+                prefetchDistance = 0,
             ),
             remoteMediator = TaskRemoteMediator(
                 taskStatus = status,
@@ -43,9 +45,7 @@ class TaskRepository @Inject constructor(
             pagingData.map { it.toModel() }
                 .insertSeparators { before: TodoListModel.TaskModel?,
                                     after: TodoListModel.TaskModel? ->
-                    val isHeader = after != null && (before == null || before.date != after.date)
-
-                    takeIf { isHeader }
+                    takeIf { before?.date != after?.date }
                         ?.let {
                             TodoListModel.DateGroupTasksModel(
                                 date = after?.date.orEmpty(),

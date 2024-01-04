@@ -22,11 +22,13 @@ object RepositoryModule {
     fun provideTaskRepository(
         apiService: APIService,
         appDatabase: AppDatabase,
+        appConfig: AppConfig,
         @IODispatcher dispatcher: CoroutineDispatcher,
     ): TaskRepository {
         return TaskRepository(
             apiService = apiService,
             appDatabase = appDatabase,
+            appConfig = appConfig,
             dispatcher = dispatcher,
         )
     }
