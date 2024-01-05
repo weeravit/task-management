@@ -1,7 +1,7 @@
 # Task Management Application
 
 ## Description
-The purpose of this assignment is to show how to use Jetpack Compose.
+The purpose of this assignment is to show how to use Jetpack Compose. [Download APK](https://github.com/weeravit/task-management/releases/download/v1.0/app-release.apk)
 
 ## Features
 - [x] Task list by status (todo, doing, done)
@@ -22,6 +22,13 @@ The purpose of this assignment is to show how to use Jetpack Compose.
 - Wait for Android Studio to sync the project and download any necessary dependencies.
 - Connect an Android device or start an emulator.
 - Build and run the application by clicking on the "Run" button in Android Studio
+
+```diff
+! Note: The app lags when run in debug mode.
+```
+```diff
++ The solution is to Generate Signed APK using Release Variant or [Download APK](https://github.com/weeravit/task-management/releases/download/v1.0/app-release.apk) to test it.
+```
 
 ## Unit Testing
 The project focuses on Repository and ViewModel.
