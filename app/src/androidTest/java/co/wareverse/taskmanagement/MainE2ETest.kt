@@ -11,6 +11,7 @@ import co.wareverse.taskmanagement.e2e.scrollDown
 import co.wareverse.taskmanagement.e2e.scrollUp
 import co.wareverse.taskmanagement.e2e.setupPasscode
 import co.wareverse.taskmanagement.e2e.swipeToDeleteTask
+import co.wareverse.taskmanagement.e2e.waitTaskListDisplay
 import co.wareverse.taskmanagement.e2e.waitUntilPasscodeLock
 import co.wareverse.taskmanagement.presentation.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -54,13 +55,13 @@ class MainE2ETest {
 
         // Task List
         changeTab(TaskStatus.TODO)
+        waitTaskListDisplay()
         swipeToDeleteTask()
         changeTab(TaskStatus.DOING)
+        waitTaskListDisplay()
         swipeToDeleteTask()
-        scrollUp()
-        scrollDown()
         changeTab(TaskStatus.DONE)
+        waitTaskListDisplay()
         swipeToDeleteTask()
-        scrollUp()
     }
 }
