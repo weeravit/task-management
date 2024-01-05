@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Task Management</string>
+    <string name="passcode_setup_screen_title_text">SETUP A NEW PASSCODE</string>
+    <string name="passcode_setup_screen_subtitle_text">Please enter your passcode</string>
+
+    <string name="confirm_setup_passcode_screen_title_text">CONFIRM A NEW PASSCODE</string>
+    <string name="confirm_setup_passcode_screen_subtitle_text">Please enter your passcode</string>
+    <string name="confirm_setup_passcode_screen_mismatch_text">Your confirm passcode does not match. Please try again.</string>
+
+    <string name="passcode_lock_screen_title_text">ENTER PASSCODE</string>
+    <string name="passcode_lock_screen_subtitle_text">Please enter your passcode</string>
+    <string name="passcode_lock_screen_incorrect_text">Incorrect Passcode. Please try again.</string>
+    <string name="reset_new_passcode_text">Need to setup a new passcode</string>
 </resources>
